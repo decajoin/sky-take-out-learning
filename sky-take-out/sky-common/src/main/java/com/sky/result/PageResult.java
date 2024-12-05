@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
+ * 所有的分页查询的结果都会封装成这个 PageResult 对象
  * 封装分页查询结果
  */
 @Data

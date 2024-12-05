@@ -32,6 +32,7 @@ public class Employee implements Serializable {
 
     private Integer status;
 
+    // 日期格式化注解，采用拓展消息转换器的方式就不需要每个日期属性都加上这个注解了
     //@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 
