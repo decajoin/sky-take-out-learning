@@ -118,4 +118,19 @@ public class EmployeeController {
 
         return Result.success();
     }
+
+    /**
+     * 根据 id 查询员工
+     * 目的是在前端进行修改员工信息的时候可以将数据库中存储的员工信息进行回显
+     * @param id
+     * @return
+     */
+    @GetMapping("/{id}")
+    @ApiOperation("根据 id 查询员工")
+    public Result<Employee> getById(@PathVariable("id") Long id) {
+        log.info("根据 id 查询员工，参数：id = {}", id);
+        Employee employee = employeeService.getById(id);
+
+        return Result.success(employee);
+    }
 }
