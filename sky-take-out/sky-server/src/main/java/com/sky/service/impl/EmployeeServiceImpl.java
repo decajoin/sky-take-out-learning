@@ -83,14 +83,15 @@ public class EmployeeServiceImpl implements EmployeeService {
         // 设置账号的密码，默认密码为 123456，需要进行 md5 加密
         employee.setPassword(DigestUtils.md5DigestAsHex(PasswordConstant.DEFAULT_PASSWORD.getBytes()));
 
-        // 设置账号的创建时间和更新时间
-        employee.setCreateTime(LocalDateTime.now());
-        employee.setUpdateTime(LocalDateTime.now());
-
-        // 设置账号的创建人 ID 和更新人 ID
-        // 从 ThreadLocal 中获取当前登录的员工 ID，作为创建人和更新人
-        employee.setCreateUser(BaseContext.getCurrentId());
-        employee.setUpdateUser(BaseContext.getCurrentId());
+        // 使用切面进行前置通知，不需要手动进行设置了
+//        // 设置账号的创建时间和更新时间
+//        employee.setCreateTime(LocalDateTime.now());
+//        employee.setUpdateTime(LocalDateTime.now());
+//
+//        // 设置账号的创建人 ID 和更新人 ID
+//        // 从 ThreadLocal 中获取当前登录的员工 ID，作为创建人和更新人
+//        employee.setCreateUser(BaseContext.getCurrentId());
+//        employee.setUpdateUser(BaseContext.getCurrentId());
 
         employeeMapper.insert(employee);
     }
@@ -156,9 +157,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     public void update(EmployeeDTO employeeDTO) {
         Employee employee = new Employee();
         BeanUtils.copyProperties(employeeDTO, employee);
-        // 通过 ThreadLocal 获取当前登录用户的 id
-        employee.setUpdateUser(BaseContext.getCurrentId());
-        employee.setUpdateTime(LocalDateTime.now());
+        // 使用切面进行前置通知，不需要手动进行设置了
+//        // 通过 ThreadLocal 获取当前登录用户的 id
+//        employee.setUpdateUser(BaseContext.getCurrentId());
+//        employee.setUpdateTime(LocalDateTime.now());
         employeeMapper.update(employee);
     }
 
