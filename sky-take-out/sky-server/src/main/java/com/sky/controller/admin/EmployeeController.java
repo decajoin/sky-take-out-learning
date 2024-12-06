@@ -88,6 +88,11 @@ public class EmployeeController {
     }
 
 
+    /***
+     * 员工分页查询
+     * @param employeePageQueryDTO
+     * @return
+     */
     @GetMapping("/page")
     @ApiOperation("员工分页查询")
     // 前端请求是 Query 形式，所以不需要添加 @RequestBody 注解
@@ -98,4 +103,19 @@ public class EmployeeController {
         return Result.success(pageResult);
     }
 
+
+    /**
+     * 员工账号启用禁用
+     * @param status
+     * @param id
+     * @return
+     */
+    @PostMapping("/status/{status}")
+    @ApiOperation("员工账号启用禁用")
+    public Result startOrStop(@PathVariable("status") Integer status, Long id) {
+        log.info("员工账号启用禁用，参数：status = {}, id = {}", status, id);
+        employeeService.startOrStop(status, id);
+
+        return Result.success();
+    }
 }

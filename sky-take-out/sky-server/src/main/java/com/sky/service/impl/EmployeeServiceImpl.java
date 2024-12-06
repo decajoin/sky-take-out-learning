@@ -116,4 +116,23 @@ public class EmployeeServiceImpl implements EmployeeService {
         return new PageResult(total, records);
     }
 
+    @Override
+    public void startOrStop(Integer status, Long id) {
+        // 使用 SQL 语句更新员工的状态
+        // 使用动态更新的方式，我们创建一个 Employee 对象，设置需要更新的字段，然后调用 update 方法
+        // update 方法会自动生成 SQL 语句，只更新我们设置的属性，其他属性不会更新
+
+        Employee employee = new Employee();
+        employee.setStatus(status);
+        employee.setId(id);
+
+        // 由于 Employee 中设置了 @Builder 注解，所以可以也直接使用 Employee.builder().build() 创建对象
+//        Employee employee = Employee.builder()
+//                        .status(status)
+//                        .id(id)
+//                        .build();
+
+        employeeMapper.update(employee);
+    }
+
 }
