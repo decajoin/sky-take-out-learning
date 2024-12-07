@@ -98,17 +98,25 @@ public class DishServiceImpl implements DishService {
 
         // 判断当前菜品是否能删除 - 是否关联了套餐
         List<Long> setmealIds = setmealDishMapper.getSetmealIdsByDishIds(ids);
-        if (setmealIds.size() > 0 && setmealIds != null) {
+        if (!setmealIds.isEmpty()) {
             throw new DeletionNotAllowedException(MessageConstant.DISH_BE_RELATED_BY_SETMEAL);
         }
 
 
         // 删除菜品表中的菜品数据
-        for (Long id : ids) {
-            dishMapper.deletById(id);
-            // 删除菜品关联的口味数据
-            dishFlavorMapper.deleteByDishId(id);
-        }
+        // for 会导致同时执行多个 SQL 语句，可能导致性能低下
+//        for (Long id : ids) {
+//            dishMapper.deletById(id);
+//            // 删除菜品关联的口味数据
+//            dishFlavorMapper.deleteByDishId(id);
+//        }
+
+        // 修改逻辑把批量删除操作直接交给动态 SQL，每次批量删除就只需要一个 SQL
+        // 根据菜品 id 批量删除菜品表中的菜品数据
+        dishMapper.deleteByIds(ids);
+
+        // 根据菜品 id 批量删除菜品关联的口味数据
+        dishFlavorMapper.deleteByDishIds(ids);
 
 
     }
