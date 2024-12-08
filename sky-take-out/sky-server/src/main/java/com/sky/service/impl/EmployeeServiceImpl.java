@@ -9,9 +9,11 @@ import com.sky.context.BaseContext;
 import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
 import com.sky.dto.EmployeePageQueryDTO;
+import com.sky.dto.PasswordEditDTO;
 import com.sky.entity.Employee;
 import com.sky.exception.AccountLockedException;
 import com.sky.exception.AccountNotFoundException;
+import com.sky.exception.PasswordEditFailedException;
 import com.sky.exception.PasswordErrorException;
 import com.sky.mapper.EmployeeMapper;
 import com.sky.result.PageResult;
@@ -23,6 +25,7 @@ import org.springframework.util.DigestUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
@@ -163,5 +166,36 @@ public class EmployeeServiceImpl implements EmployeeService {
 //        employee.setUpdateTime(LocalDateTime.now());
         employeeMapper.update(employee);
     }
+
+    /**
+     * 修改员工密码
+     * @param passwordEditDTO
+     */
+    @Override
+    public void updatePassword(PasswordEditDTO passwordEditDTO) {
+        Employee employee = new Employee();
+        // 通过 ThreadLocal 获取当前登录用户的 id！！
+        Long id = BaseContext.getCurrentId();
+        employee.setId(id);
+
+        // 通过 body 获得前端传过来的密码
+        String oldPassword = passwordEditDTO.getOldPassword();
+        oldPassword = DigestUtils.md5DigestAsHex(oldPassword.getBytes());
+
+        // 经过 MD5 加密后与数据库中的原密码进行比对
+        if (Objects.equals(oldPassword, employeeMapper.getPasswordById(id))) {
+            // 如果比对成功则进行更新
+            String password = passwordEditDTO.getNewPassword();
+            password = DigestUtils.md5DigestAsHex(password.getBytes());
+            employee.setPassword(password);
+            employeeMapper.update(employee);
+        } else {
+            // 如果比对失败则抛出异常
+            throw new PasswordEditFailedException(MessageConstant.PASSWORD_EDIT_FAILED);
+        }
+
+
+    }
+
 
 }
