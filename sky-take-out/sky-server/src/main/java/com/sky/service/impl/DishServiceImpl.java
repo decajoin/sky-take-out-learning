@@ -120,4 +120,68 @@ public class DishServiceImpl implements DishService {
 
 
     }
+
+    /**
+     * 根据 id 获取菜品信息和口味信息
+     * @param id
+     * @return
+     */
+    @Override
+    public DishVO getByIdWithFlavor(Long id) {
+        // 根据 id 获取菜品信息
+        Dish dish = dishMapper.getById(id);
+
+        // 根据菜品 id 获取口味信息
+        List<DishFlavor> dishFlavors = dishFlavorMapper.getByDishId(id);
+
+        // 封装菜品信息和口味信息
+        DishVO dishVO = new DishVO();
+        BeanUtils.copyProperties(dish, dishVO);
+        dishVO.setFlavors(dishFlavors);
+
+        return dishVO;
+    }
+
+    /**
+     * 根据 id 更新菜品信息和口味信息
+     * @param dishDTO
+     */
+    @Override
+    @Transactional
+    public void updateWithFlavor(DishDTO dishDTO) {
+        // 修改菜品表基本信息
+        Dish dish = new Dish();
+        BeanUtils.copyProperties(dishDTO, dish);
+        dishMapper.update(dish);
+
+        // 删除原有的口味数据
+        dishFlavorMapper.deleteByDishId(dishDTO.getId());
+
+        // 重新插入口味数据
+        List<DishFlavor> flavors = dishDTO.getFlavors();
+        if (flavors != null && !flavors.isEmpty()) {
+            flavors.forEach(dishFlavor -> dishFlavor.setDishId(dishDTO.getId()));
+            // 向口味表插入 n 条数据
+            dishFlavorMapper.insertBatch(flavors);
+
+        }
+
+
+    }
+
+    /**
+     * 启售或停售菜品
+     * @param status
+     * @param id
+     */
+    @Override
+    public void startOrStop(Integer status, Long id) {
+        Dish dish = new Dish();
+        dish.setStatus(status);
+        dish.setId(id);
+
+        dishMapper.update(dish);
+    }
+
+
 }
