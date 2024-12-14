@@ -95,15 +95,18 @@ public class SetmealServiceImpl implements SetmealService {
             }
         });
 
-        // TODO: 优化删除逻辑，使用批量删除（只使用一个 SQL 语句进行批量删除）
-        // 这里批量删除的逻辑是遍历 ids，根据每个 id 删除套餐表和套餐-菜品关联表中的数据
-        ids.forEach(id -> {
-            // 删除套餐表中的数据
-            setmealMapper.deleteById(id);
+//        // 这里批量删除的逻辑是遍历 ids，根据每个 id 删除套餐表和套餐-菜品关联表中的数据
+//        ids.forEach(id -> {
+//            // 删除套餐表中的数据
+//            setmealMapper.deleteById(id);
+//
+//            // 删除套餐-菜品关联表中的数据
+//            setmealDishMapper.deleteBySetmealId(id);
+//        });
 
-            // 删除套餐-菜品关联表中的数据
-            setmealDishMapper.deleteBySetmealId(id);
-        });
+        // 优化后的批量删除
+        setmealMapper.deleteByIds(ids);
+        setmealDishMapper.deleteBySetmealIds(ids);
 
     }
 }
