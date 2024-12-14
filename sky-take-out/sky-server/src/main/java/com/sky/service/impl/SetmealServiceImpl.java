@@ -2,10 +2,13 @@ package com.sky.service.impl;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.sky.constant.MessageConstant;
+import com.sky.constant.StatusConstant;
 import com.sky.dto.SetmealDTO;
 import com.sky.dto.SetmealPageQueryDTO;
 import com.sky.entity.Setmeal;
 import com.sky.entity.SetmealDish;
+import com.sky.exception.DeletionNotAllowedException;
 import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealDishMapper;
 import com.sky.mapper.SetmealMapper;
@@ -75,5 +78,32 @@ public class SetmealServiceImpl implements SetmealService {
         Page<SetmealVO> page = setmealMapper.pageQuery(setmealPageQueryDTO);
 
         return new PageResult(page.getTotal(), page.getResult());
+    }
+
+    /**
+     * 批量删除套餐
+     * @param ids
+     */
+    @Override
+    @Transactional
+    public void deleteBatch(List<Long> ids) {
+        ids.forEach(id -> {
+            Setmeal setmeal = setmealMapper.getById(id);
+            if (setmeal.getStatus().equals(StatusConstant.ENABLE)) {
+                // 套餐正在售卖中，不能删除
+                throw new DeletionNotAllowedException(MessageConstant.SETMEAL_ON_SALE);
+            }
+        });
+
+        // TODO: 优化删除逻辑，使用批量删除（只使用一个 SQL 语句进行批量删除）
+        // 这里批量删除的逻辑是遍历 ids，根据每个 id 删除套餐表和套餐-菜品关联表中的数据
+        ids.forEach(id -> {
+            // 删除套餐表中的数据
+            setmealMapper.deleteById(id);
+
+            // 删除套餐-菜品关联表中的数据
+            setmealDishMapper.deleteBySetmealId(id);
+        });
+
     }
 }
