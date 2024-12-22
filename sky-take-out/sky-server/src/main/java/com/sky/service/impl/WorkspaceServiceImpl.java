@@ -37,11 +37,12 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
     /**
      * 根据时间段统计营业数据
-     * @param begin
-     * @param end
+     * @param beginTime
+     * @param endTime
      * @return
      */
-    public BusinessDataVO getBusinessData(LocalDateTime begin, LocalDateTime end) {
+    @Override
+    public BusinessDataVO getBusinessData(LocalDateTime beginTime, LocalDateTime endTime) {
         /**
          * 营业额：当日已完成订单的总金额
          * 有效订单：当日已完成订单的数量
@@ -51,8 +52,8 @@ public class WorkspaceServiceImpl implements WorkspaceService {
          */
 
         Map map = new HashMap();
-        map.put("begin",begin);
-        map.put("end",end);
+        map.put("beginTime", beginTime);
+        map.put("endTime", endTime);
 
         //查询总订单数
         Integer totalOrderCount = orderMapper.countByMap(map);
@@ -71,6 +72,12 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         if(totalOrderCount != 0 && validOrderCount != 0){
             //订单完成率
             orderCompletionRate = validOrderCount.doubleValue() / totalOrderCount;
+
+            // 控制 orderCompletionRate 小数位数，比如保留三位小数
+            orderCompletionRate = BigDecimal.valueOf(orderCompletionRate)
+                    .setScale(3, RoundingMode.HALF_UP)
+                    .doubleValue();
+
             //平均客单价
             unitPrice = turnover / validOrderCount;
 
@@ -98,9 +105,10 @@ public class WorkspaceServiceImpl implements WorkspaceService {
      *
      * @return
      */
+    @Override
     public OrderOverViewVO getOrderOverView() {
         Map map = new HashMap();
-        map.put("begin", LocalDateTime.now().with(LocalTime.MIN));
+        map.put("beginTime", LocalDateTime.now().with(LocalTime.MIN));
         map.put("status", Orders.TO_BE_CONFIRMED);
 
         //待接单
@@ -136,6 +144,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
      *
      * @return
      */
+    @Override
     public DishOverViewVO getDishOverView() {
         Map map = new HashMap();
         map.put("status", StatusConstant.ENABLE);
@@ -155,6 +164,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
      *
      * @return
      */
+    @Override
     public SetmealOverViewVO getSetmealOverView() {
         Map map = new HashMap();
         map.put("status", StatusConstant.ENABLE);
