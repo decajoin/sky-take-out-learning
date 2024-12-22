@@ -1,10 +1,12 @@
 package com.sky.service.impl;
 
+import com.sky.dto.GoodsSalesDTO;
 import com.sky.entity.Orders;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
 import com.sky.vo.OrderReportVO;
+import com.sky.vo.SalesTop10ReportVO;
 import com.sky.vo.TurnoverReportVO;
 import com.sky.vo.UserReportVO;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -175,6 +178,35 @@ public class ReportServiceImpl implements ReportService {
         String validOrderCountListJoin = StringUtils.join(validOrderCountList, ",");
 
         return new OrderReportVO(dataListJoin, totalOrderCountListJoin, validOrderCountListJoin, totalOrderCount, validOrderCount, orderCompletionRate);
+    }
+
+    /**
+     * 销量 TOP10 统计
+     * @param begin
+     * @param end
+     * @return
+     */
+    @Override
+    public SalesTop10ReportVO getSalesTop10(LocalDate begin, LocalDate end) {
+
+        // 将 LocalDate 转换为 LocalDateTime
+        LocalDateTime beginTime = LocalDateTime.of(begin, LocalTime.MIN);
+        LocalDateTime endTime = LocalDateTime.of(end, LocalTime.MAX);
+
+        List<GoodsSalesDTO> salesTop10 = orderMapper.getSalesTop10(beginTime, endTime);
+
+        // 通过 stream 流获得 Top10 的名称集合
+        List<String> nameList = salesTop10.stream().map(GoodsSalesDTO::getName).collect(Collectors.toList());
+
+        // 通过 stream 流获得 Top10 的数量集合
+        List<Integer> numberList = salesTop10.stream().map(GoodsSalesDTO::getNumber).collect(Collectors.toList());
+
+        // 将 nameList 转换为字符串，以逗号分隔
+        String nameListJoin = StringUtils.join(nameList, ",");
+        // 将 numberList 转换为字符串，以逗号分隔
+        String numberListJoin = StringUtils.join(numberList, ",");
+
+        return new SalesTop10ReportVO(nameListJoin, numberListJoin);
     }
 
 
