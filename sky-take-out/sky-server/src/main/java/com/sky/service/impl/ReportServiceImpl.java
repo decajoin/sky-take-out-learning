@@ -118,6 +118,65 @@ public class ReportServiceImpl implements ReportService {
 
     }
 
+    /**
+     * 订单统计
+     * @param begin
+     * @param end
+     * @return
+     */
+    @Override
+    public OrderReportVO getOrdersStatistics(LocalDate begin, LocalDate end) {
+
+        // 当前集合用于存放从 begin 到 end 之间每天的日期
+        List<LocalDate> dataList = getDateList(begin, end);
+
+        // 当前集合用于存放从 begin 到 end 之间每天的订单总数
+        List<Integer> totalOrderCountList = new ArrayList<>();
+
+        // 当前集合用于存放从 begin 到 end 之间每天的有效订单数
+        List<Integer> validOrderCountList = new ArrayList<>();
+
+        for (LocalDate date : dataList) {
+            // 将 LocalDate 转换为 LocalDateTime
+            LocalDateTime beginTime = LocalDateTime.of(date, LocalTime.MIN);
+            LocalDateTime endTime = LocalDateTime.of(date, LocalTime.MAX);
+
+            Map map = new HashMap();
+            map.put("beginTime", beginTime);
+            map.put("endTime", endTime);
+
+            // 每天订单总数
+            Integer totalOrderCount = orderMapper.countByMap(map);
+            totalOrderCountList.add(totalOrderCount);
+
+            // 每天有效订单数
+            map.put("status", Orders.COMPLETED);
+            Integer validOrderCount = orderMapper.countByMap(map);
+            validOrderCountList.add(validOrderCount);
+        }
+
+        // 计算时间区间内的订单总数
+        Integer totalOrderCount = totalOrderCountList.stream().reduce(Integer::sum).get();
+
+        // 计算时间区间内的有效订单数
+        Integer validOrderCount = validOrderCountList.stream().reduce(Integer::sum).get();
+
+        // 计算订单完成率
+        Double orderCompletionRate = 0.0;
+        if (totalOrderCount != 0) {
+            orderCompletionRate = (double) validOrderCount / totalOrderCount;
+        }
+
+        // 将 dataList 转换为字符串，以逗号分隔
+        String dataListJoin = StringUtils.join(dataList, ",");
+        // 将 totalOrderCountList 转换为字符串，以逗号分隔
+        String totalOrderCountListJoin = StringUtils.join(totalOrderCountList, ",");
+        // 将 validOrderCountList 转换为字符串，以逗号分隔
+        String validOrderCountListJoin = StringUtils.join(validOrderCountList, ",");
+
+        return new OrderReportVO(dataListJoin, totalOrderCountListJoin, validOrderCountListJoin, totalOrderCount, validOrderCount, orderCompletionRate);
+    }
+
 
     private List<LocalDate> getDateList(LocalDate begin, LocalDate end) {
 
